@@ -1,0 +1,4 @@
+/* Add this to your global CSS file */
+.react-calendar__month-view__days__day {
+    overflow: visible !important;
+}
