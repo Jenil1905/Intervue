@@ -26,14 +26,15 @@ app.use(cookieParser());
 
 // ✅ CORS configuration for dev + production
 const allowedOrigins = [
-  'http://localhost:5173', // local dev frontend
-  'https://intervue-frontend-ten.vercel.app' // deployed frontend
+  'http://localhost:5173', 
+  'https://intervue-frontend-ten.vercel.app'
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // allow tools like Postman
-    if (allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true); // allow Postman / curl
+    const isAllowed = allowedOrigins.some(o => origin.startsWith(o));
+    if (isAllowed) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS: ' + origin));
