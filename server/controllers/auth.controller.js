@@ -36,8 +36,8 @@ async function signup(req, res) {
     const token = await generateToken(newUser._id);
     res.cookie('token', token, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: process.env.NODE_ENV === "production",
+sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 30*24*60*60*1000 //30 days
     })
 
@@ -80,8 +80,8 @@ async function login(req,res){
         const token = await generateToken(existingUser._id);
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+           secure: process.env.NODE_ENV === "production",
+sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             maxAge: 30*24*60*60*1000 //30 days
         })
 
@@ -98,8 +98,9 @@ async function login(req,res){
         res.cookie('token', '', {
             httpOnly: true,
             expires: new Date(0), // Set expiration to the past
-            sameSite: 'none',
-            secure: true
+            secure: process.env.NODE_ENV === "production",
+sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+
         });
         res.status(200).json({ message: "Logged out successfully." });
     } catch (error) {
