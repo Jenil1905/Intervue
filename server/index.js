@@ -2,86 +2,94 @@ const express = require('express');
 const app = express();
 const connectDB = require('./connection');
 require('dotenv').config();
-connectDB(process.env.dbUrl);
-const authRoutes = require('./routes/auth.routes.js');
 const cookieParser = require('cookie-parser');
-const userRoutes = require('./routes/user.routes.js');
 const cors = require('cors');
-const aiRoutes = require('./routes/aiRoutes.js');
-const interviewRoutes = require('./routes/interview.routes.js')
-const verifyRoutes = require('./routes/verifyRoutes.js')
-const scheduleInterviewRoutes = require('./routes/scheduleInterview.routes.js')
-const cron = require('node-cron')
-const transporter = require('./nodemailer.js')
-const ScheduleInterview = require('./models/scheduleInterview.model.js')
-const feedbackRoutes = require('./routes/feedback.routes.js')
+const cron = require('node-cron');
+const transporter = require('./nodemailer.js');
+const ScheduleInterview = require('./models/scheduleInterview.model.js');
 
-//Middleware
+// Routes
+const authRoutes = require('./routes/auth.routes.js');
+const verifyRoutes = require('./routes/verifyRoutes.js');
+const userRoutes = require('./routes/user.routes.js');
+const aiRoutes = require('./routes/aiRoutes.js');
+const interviewRoutes = require('./routes/interview.routes.js');
+const scheduleInterviewRoutes = require('./routes/scheduleInterview.routes.js');
+const feedbackRoutes = require('./routes/feedback.routes.js');
+
+// Connect to DB
+connectDB(process.env.dbUrl);
+
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: 'https://intervue-frontend-ten.vercel.app/',
-    credentials: true,
-}))
 
-//Routes
+// ✅ CORS configuration for dev + production
+const allowedOrigins = [
+  'http://localhost:5173', // local dev frontend
+  'https://intervue-frontend-ten.vercel.app' // deployed frontend
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); // allow tools like Postman
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
+  credentials: true
+}));
+
+// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', verifyRoutes); // verify route
 app.use('/api/user', userRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/interview' , interviewRoutes)
-app.use('/api/auth', verifyRoutes)
-app.use('/api/schedule-interviews', scheduleInterviewRoutes)
+app.use('/api/interview', interviewRoutes);
+app.use('/api/schedule-interviews', scheduleInterviewRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
-
-//sending the email
+// ✅ Cron job for sending interview reminders
 cron.schedule('0 8 * * *', async () => {
-    console.log('Running a check for scheduled interviews...'); // This should appear every minute
-    
-    try {
-        const now = new Date();
-        const oneMinuteFromNow = new Date(now.getTime() + 60 * 1000);
+  console.log('Running a check for scheduled interviews...');
 
-        const upcomingInterviews = await ScheduleInterview.find({
-            scheduledTime: { $gte: now, $lt: oneMinuteFromNow },
-            status: 'scheduled',
-            reminderSent: false
-        }).populate('userId', 'email name');
+  try {
+    const now = new Date();
+    const oneMinuteFromNow = new Date(now.getTime() + 60 * 1000);
 
-        if (upcomingInterviews.length > 0) {
-            console.log(`Found ${upcomingInterviews.length} upcoming interviews.`);
-            // ... email sending logic ...
+    const upcomingInterviews = await ScheduleInterview.find({
+      scheduledTime: { $gte: now, $lt: oneMinuteFromNow },
+      status: 'scheduled',
+      reminderSent: false
+    }).populate('userId', 'email name');
 
-            for (const interview of upcomingInterviews) {
-                // ✅ 1. Define the email content
-                const mailOptions = {
-                    from: process.env.EMAIL_USER,
-                    to: interview.userId.email,
-                    subject: `Reminder: Your ${interview.topic} Interview is starting now!`,
-                    html: `
-                        <h1>Hi ${interview.userId.name},</h1>
-                        <p>This is a reminder that your interview on <b>${interview.topic.replace(/-/g, ' ')}</b> is scheduled to begin now.</p>
-                        <p>Good luck!</p>
-                    `
-                };
+    for (const interview of upcomingInterviews) {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: interview.userId.email,
+        subject: `Reminder: Your ${interview.topic} Interview is starting now!`,
+        html: `
+          <h1>Hi ${interview.userId.name},</h1>
+          <p>This is a reminder that your interview on <b>${interview.topic.replace(/-/g, ' ')}</b> is scheduled to begin now.</p>
+          <p>Good luck!</p>
+        `
+      };
 
-                // ✅ 2. Send the email
-                await transporter.sendMail(mailOptions);
-                console.log(`Reminder email sent to ${interview.userId.email}`);
+      await transporter.sendMail(mailOptions);
+      console.log(`Reminder email sent to ${interview.userId.email}`);
 
-                // ✅ 3. Mark as sent to prevent duplicate emails
-                interview.reminderSent = true;
-                await interview.save();
-            }
-        }
-    } catch (error) {
-        console.error("Error in cron job:", error);
+      interview.reminderSent = true;
+      await interview.save();
     }
+  } catch (error) {
+    console.error("Error in cron job:", error);
+  }
 });
 
-
-
-
-app.listen(3000,()=>{
-    console.log('Server is running on port 3000');
-})
+// ✅ Start server (use PORT from Render if available)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
