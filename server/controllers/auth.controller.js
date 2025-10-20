@@ -37,7 +37,7 @@ async function signup(req, res) {
     res.cookie('token', token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'strict',
+        sameSite: 'none',
         maxAge: 30*24*60*60*1000 //30 days
     })
 
@@ -81,7 +81,7 @@ async function login(req,res){
         res.cookie('token', token, {
             httpOnly: true,
             secure: true,
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 30*24*60*60*1000 //30 days
         })
 
@@ -97,7 +97,9 @@ async function login(req,res){
     try {
         res.cookie('token', '', {
             httpOnly: true,
-            expires: new Date(0) // Set expiration to the past
+            expires: new Date(0), // Set expiration to the past
+            sameSite: 'none',
+            secure: true
         });
         res.status(200).json({ message: "Logged out successfully." });
     } catch (error) {
