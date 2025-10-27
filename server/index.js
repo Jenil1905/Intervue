@@ -27,7 +27,7 @@ app.use(cookieParser());
 // ✅ CORS configuration for dev + production
 const allowedOrigins = [
   'http://localhost:5173', 
-  'https://intervue-frontend-n6ml5jws0-jenils-projects-508f8370.vercel.app'
+  'https://intervue-frontend-ten.vercel.app'
 ];
 
 app.use(cors({
