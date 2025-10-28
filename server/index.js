@@ -88,6 +88,9 @@ cron.schedule('0 8 * * *', async () => {
     console.error("Error in cron job:", error);
   }
 });
+ app.get('/', (req, res) => {
+    res.send('Welcome to the Intervue API');
+});
 
 // ✅ Start server (use PORT from Render if available)
 const PORT = process.env.PORT || 3000;
