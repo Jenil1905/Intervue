@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+/* Global hand / pointer cursor for all interactive elements across every page */
+button,
+a,
+select,
+option,
+label,
+summary,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+[role="button"],
+[tabindex],
+.cursor-pointer,
+.react-calendar__tile,
+.react-calendar__navigation button,
+.react-calendar__month-view__days__day {
+    cursor: pointer !important;
+}

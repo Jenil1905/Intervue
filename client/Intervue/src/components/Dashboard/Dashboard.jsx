@@ -310,8 +310,8 @@ function Dashboard() {
 
             {/* Sidebar Navigation */}
             <aside className={`
-                ${sidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0 lg:w-72'} 
-                fixed inset-y-0 left-0 z-50 h-screen bg-gray-900 text-white shadow-2xl transition-all duration-300 flex flex-col overflow-hidden
+                ${sidebarOpen ? 'translate-x-0 w-72 opacity-100' : '-translate-x-full w-0 opacity-0 pointer-events-none'} 
+                fixed lg:relative inset-y-0 left-0 z-50 h-screen bg-gray-900 text-white shadow-2xl transition-all duration-300 ease-in-out flex flex-col overflow-hidden shrink-0
             `}>
                 <div className="flex-shrink-0 p-6 border-b border-gray-800">
                     <div className="flex items-center justify-between">
@@ -321,7 +321,11 @@ function Dashboard() {
                             </div>
                             <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Intervue</span>
                         </h1>
-                        <button onClick={toggleSidebar} className="p-2 hover:bg-gray-800 rounded-lg lg:hidden text-gray-400">
+                        <button 
+                            onClick={toggleSidebar} 
+                            title="Close sidebar panel"
+                            className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer"
+                        >
                             <FaTimes size={16} />
                         </button>
                     </div>
@@ -352,14 +356,14 @@ function Dashboard() {
 
                     {/* Navigation Menu */}
                     <nav className="space-y-1">
-                        <a href="/profile" className="flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl transition-colors font-medium text-sm">
+                        <a href="/profile" className="flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl transition-colors font-medium text-sm cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <FaUserCircle className="text-blue-400" size={18} />
                                 <span>Profile</span>
                             </div>
                             <FaChevronRight size={12} className="text-gray-500" />
                         </a>
-                        <a href="/settings" className="flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl transition-colors font-medium text-sm">
+                        <a href="/settings" className="flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl transition-colors font-medium text-sm cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <FaUserCog className="text-emerald-400" size={18} />
                                 <span>Settings</span>
@@ -368,7 +372,7 @@ function Dashboard() {
                         </a>
                         <button 
                             onClick={() => setIsLogoutModalOpen(true)} 
-                            className="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-rose-400 rounded-xl transition-colors font-medium text-sm"
+                            className="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-rose-400 rounded-xl transition-colors font-medium text-sm cursor-pointer"
                         >
                             <div className="flex items-center gap-3">
                                 <FaArrowRightFromBracket className="text-rose-400" size={18} />
@@ -412,7 +416,7 @@ function Dashboard() {
                                     {interviews.length > 4 && (
                                         <button 
                                             onClick={() => setIsHistoryModalOpen(true)}
-                                            className="w-full text-center py-2 text-xs font-semibold text-blue-400 hover:text-blue-300 hover:underline transition-colors mt-1"
+                                            className="w-full text-center py-2 text-xs font-semibold text-blue-400 hover:text-blue-300 hover:underline transition-colors mt-1 cursor-pointer"
                                         >
                                             + View All ({interviews.length})
                                         </button>
@@ -427,12 +431,17 @@ function Dashboard() {
             </aside>
 
             {/* Main Dashboard Area */}
-            <main className="flex-1 flex flex-col min-w-0">
+            <main className="flex-1 flex flex-col min-w-0 transition-all duration-300">
                 {/* Header Navbar */}
                 <header className="bg-white border-b border-gray-200/80 px-4 sm:px-8 py-4 sticky top-0 z-30 flex items-center justify-between shadow-xs">
                     <div className="flex items-center gap-4">
-                        <button onClick={toggleSidebar} className="p-2.5 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors">
-                            <FaBars size={18} />
+                        <button 
+                            onClick={toggleSidebar} 
+                            title={sidebarOpen ? "Close sidebar panel" : "Open sidebar panel"}
+                            className="p-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-gray-700 transition-colors flex items-center gap-2 cursor-pointer text-xs sm:text-sm font-semibold shadow-2xs"
+                        >
+                            <FaBars size={16} className="text-gray-700" />
+                            <span>{sidebarOpen ? "Hide Panel" : "Show Panel"}</span>
                         </button>
                     </div>
 
