@@ -9,10 +9,14 @@ const safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
 ];
 
-const MODEL_NAME = "gemini-2.5-flash";
+const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+
+function getModelName(attempt = 0) {
+    return MODELS[attempt % MODELS.length] || "gemini-1.5-flash";
+}
 
 async function generateAIResponse(topic, count = 5, difficulty = 'intermediate') {
-    console.log(`🤖 Generating AI questions (${difficulty.toUpperCase()} level) with gemini-2.5-flash`);
+    console.log(`🤖 Generating AI questions (${difficulty.toUpperCase()} level)`);
 
     let difficultyInstruction = "";
     if (difficulty === 'junior') {
@@ -42,11 +46,12 @@ NO OTHER TEXT. JUST THE JSON ARRAY.`;
     const maxAttempts = 3;
 
     while (attempts < maxAttempts) {
+        const modelName = getModelName(attempts);
         try {
-            console.log(`🤖 Attempt ${attempts + 1}: Using ${MODEL_NAME}`);
+            console.log(`🤖 Attempt ${attempts + 1}: Using ${modelName}`);
             
             const model = genAI.getGenerativeModel({
-                model: MODEL_NAME,
+                model: modelName,
                 generationConfig: { 
                     temperature: 0.7, 
                     maxOutputTokens: 4096,
@@ -82,7 +87,7 @@ NO OTHER TEXT. JUST THE JSON ARRAY.`;
 
         } catch (err) {
             attempts++;
-            console.error(`❌ Attempt ${attempts} failed:`, err.message);
+            console.error(`❌ Attempt ${attempts} failed with ${modelName}:`, err.message);
             
             if (attempts >= maxAttempts) {
                 console.log('⚠️ Using hardcoded questions');
@@ -95,7 +100,7 @@ NO OTHER TEXT. JUST THE JSON ARRAY.`;
 }
 
 async function generateCrossQuestion(originalQuestion, userCode, spokenAnswer) {
-    console.log('🤖 Generating cross-question with gemini-2.5-flash');
+    console.log('🤖 Generating cross-question');
 
     const prompt = `Based on this interview response, generate ONE follow-up question.
 
@@ -108,33 +113,36 @@ Return ONLY this JSON:
 
 NO OTHER TEXT.`;
 
-    try {
-        const model = genAI.getGenerativeModel({
-            model: MODEL_NAME,
-            generationConfig: { temperature: 0.8, maxOutputTokens: 512 },
-            safetySettings,
-        });
+    for (let attempts = 0; attempts < MODELS.length; attempts++) {
+        const modelName = getModelName(attempts);
+        try {
+            const model = genAI.getGenerativeModel({
+                model: modelName,
+                generationConfig: { temperature: 0.8, maxOutputTokens: 512 },
+                safetySettings,
+            });
 
-        const result = await model.generateContent(prompt);
-        const rawText = await result.response.text();
-        
-        const cleanText = rawText.trim().replace(/``````/g, '');
-        const jsonMatch = cleanText.match(/{[\s\S]*}/);
-        
-        if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            if (parsed.crossQuestion) {
-                console.log('✅ Generated cross-question');
-                return parsed.crossQuestion;
+            const result = await model.generateContent(prompt);
+            const rawText = await result.response.text();
+            
+            const cleanText = rawText.trim().replace(/``````/g, '');
+            const jsonMatch = cleanText.match(/{[\s\S]*}/);
+            
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed.crossQuestion) {
+                    console.log(`✅ Generated cross-question with ${modelName}`);
+                    return parsed.crossQuestion;
+                }
             }
+            
+            throw new Error("Invalid response");
+            
+        } catch (error) {
+            console.error(`❌ Cross-question failed with ${modelName}:`, error.message);
         }
-        
-        throw new Error("Invalid response");
-        
-    } catch (error) {
-        console.error('❌ Cross-question failed:', error.message);
-        return "Can you think of any edge cases or optimizations?";
     }
+    return "Can you think of any edge cases or optimizations?";
 }
 
 // ✅ ENHANCED AI CONTEXTUAL RESPONSE WITH CODE + TRANSCRIPT ANALYSIS
@@ -142,12 +150,13 @@ async function generateContextualResponse(transcript, question, questionPhase, c
     console.log('🤖 AI analyzing transcript + code:', { transcript, userCode, language });
 
     let attempts = 0;
-    const maxAttempts = 2;
+    const maxAttempts = 3;
 
     while (attempts < maxAttempts) {
+        const modelName = getModelName(attempts);
         try {
             const model = genAI.getGenerativeModel({
-                model: MODEL_NAME,
+                model: modelName,
                 generationConfig: { 
                     temperature: 0.6, 
                     maxOutputTokens: 1000 

@@ -9,7 +9,7 @@ const safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
 ];
 
-const MODEL_NAME = "gemini-2.5-flash";
+const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
 // ✅ GENERATE COMPREHENSIVE INTERVIEW FEEDBACK
 async function generateInterviewFeedback(interviewData) {
@@ -30,11 +30,12 @@ async function generateInterviewFeedback(interviewData) {
     const maxAttempts = 3;
 
     while (attempts < maxAttempts) {
+        const modelName = MODELS[attempts % MODELS.length] || "gemini-1.5-flash";
         try {
-            console.log(`🤖 Attempt ${attempts + 1}: Generating feedback with ${MODEL_NAME}`);
+            console.log(`🤖 Attempt ${attempts + 1}: Generating feedback with ${modelName}`);
             
             const model = genAI.getGenerativeModel({
-                model: MODEL_NAME,
+                model: modelName,
                 generationConfig: { 
                     temperature: 0.7, 
                     maxOutputTokens: 4000,
