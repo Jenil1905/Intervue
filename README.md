@@ -1,165 +1,200 @@
-🎯 AI-Powered Interview System
-A comprehensive, real-time interview platform that leverages artificial intelligence to conduct technical interviews with intelligent questioning, contextual responses, and detailed performance analysis.
+# 🎯 Intervue — AI-Powered Technical Interview Platform
+
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express.js-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Gemini AI](https://img.shields.io/badge/Google_Gemini-AI_3.6-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+
+> **Intervue** is an autonomous, full-stack AI mock interviewing platform designed for Computer Science students and software engineers. It simulates realistic technical interviews using real-time speech recognition, voice synthesis, code execution analysis, and proctoring controls.
+
+---
+
+## 🌟 Key Features
+
+### 🤖 Adaptive AI Technical Interviewer
+* **Topic-Tailored Questions**: Dynamic generation of CS questions across Data Structures & Algorithms, Operating Systems, Computer Networks, JavaScript, Java, Python, C++, and DBMS.
+* **Contextual Conversations**: Analyzes both **spoken explanations** and **written code** simultaneously to ask intelligent follow-up questions.
+* **Natural Intent Detection**: Understands candidate intents such as requesting question repetition (`repeat`), seeking clarification (`elaborate`/`explain`), or requesting to move forward.
+
+### 💻 Integrated Monaco Code Editor
+* **Multi-Language Support**: Write and practice solutions in Java, Python, C++, JavaScript, or SQL.
+* **Auto-Save & Real-Time Sync**: Code changes are continuously saved to MongoDB.
+* **Monaco Integration**: Built-in syntax highlighting, line numbers, and autocomplete powered by VS Code's editor engine.
+
+### 🎙️ Real-Time Voice & Speech Interaction
+* **Speech-to-Text**: Converts candidate speech to text using the Web Speech API.
+* **Text-to-Speech**: AI interviewer speaks follow-up questions and conversational responses.
+* **Streamlined Mic Controls**: 1-click toggle to speak, review, and auto-submit.
+
+### 🛡️ Smart Proctoring & Integrity System
+* **Fullscreen Enforcement**: Enforces fullscreen mode with immediate warning triggers.
+* **Tab-Switch Detection**: Monitors tab-switching activities with a 3-warning automated termination rule.
+* **Proctoring Telemetry**: Logs violation metrics directly into session reports.
+
+### 📊 In-Depth Performance Analytics
+* **20-Point Metric Scoring**: Questions are evaluated out of 20 points across 4 distinct categories:
+  * **Technical Accuracy (8 pts)**
+  * **Code Quality & Implementation (6 pts)**
+  * **Communication & Explanation (4 pts)**
+  * **Problem-Solving Approach (2 pts)**
+* **Automated Grade Assignment**: Maps overall scores (0–100) to Letter Grades (`A+`, `A`, `B+`, `B`, `C+`, `C`, `F`).
+* **Detailed Question Breakdown**: Itemized feedback, candidate strengths, improvement areas, and career recommendations.
+
+---
+
+## 🛠️ Architecture & Tech Stack
+
+| Layer | Technologies Used |
+| :--- | :--- |
+| **Frontend** | React 18, Vite, React Router v6, Tailwind CSS, Monaco Editor (`@monaco-editor/react`), Lucide Icons, React Calendar, Lottie React |
+| **Backend** | Node.js, Express.js, Mongoose (MongoDB ODM), Cookie Parser, CORS, Nodemailer, Node-cron |
+| **AI & LLM Integration** | Google Generative AI SDK (`@google/generative-ai`) — Gemini 3.6 & 2.5 Flash models |
+| **Browser APIs** | Web Speech API (`SpeechRecognition` & `SpeechSynthesis`), MediaDevices API (Camera/Mic) |
+
+---
+
+## 📁 Repository Structure
+
+```
+Intervue/
+├── client/                     # React Frontend Application
+│   └── Intervue/
+│       ├── public/             # Static Assets
+│       ├── src/
+│       │   ├── apiCalls/       # Centralized Axios API Clients
+│       │   ├── assets/         # Lottie & Image Assets
+│       │   ├── components/     # UI Pages & Components
+│       │   │   ├── Dashboard/  # User Dashboard & Stats
+│       │   │   ├── Feedback/   # Analytics & Score Reports
+│       │   │   ├── InterviewPage/# Live AI Interview Room
+│       │   │   ├── Login/      # Authentication Pages
+│       │   │   ├── Profile/    # User Profile Settings
+│       │   │   ├── Settings/   # System & AI Preferences
+│       │   │   └── SignUp/     # Account Registration
+│       │   ├── App.jsx         # Client Routes
+│       │   └── main.jsx        # Entrypoint
+│       ├── package.json
+│       └── vite.config.js
+└── server/                     # Express Backend Server
+    ├── controllers/            # Route Request Handlers
+    ├── middlewares/            # JWT Auth & Security Middleware
+    ├── models/                 # Mongoose Schemas (User, Interview, Schedule)
+    ├── routes/                 # API Endpoint Routers
+    ├── service/                # AI Prompt Engineering & Feedback Services
+    ├── connection.js           # MongoDB Database Connection
+    ├── index.js                # Server Entrypoint & Cron Jobs
+    └── package.json
+```
+
+---
+
+## ⚙️ Environment Variables Configuration
+
+Create a `.env` file inside the `server/` directory with the following keys:
+
+```env
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Database
+dbUrl=mongodb+srv://<username>:<password>@cluster.mongodb.net/intervue
 
-🚀 Features
-🤖 AI-Powered Intelligence
-Dynamic Question Generation: AI generates contextual technical questions based on interview topics
+# Authentication
+JWT_SECRET=your_jwt_secret_key_here
 
-Intelligent Follow-ups: Real-time analysis of responses with smart follow-up questions
+# Google Gemini AI API Key
+gemini_api_key=your_google_gemini_api_key
 
-Contextual Responses: AI adapts to candidate answers and provides appropriate guidance
+# Email Notification Service (Gmail App Password)
+EMAIL_USER=your_email@gmail.com
+EMAIL_APP_PASSWORD=your_gmail_app_password
+```
 
-Comprehensive Feedback: Detailed performance analysis with scoring breakdowns
+---
 
-💬 Advanced Communication
-Speech Recognition: Real-time speech-to-text conversion for natural interaction
+## 🚀 Getting Started
 
-Voice Responses: AI speaks follow-up questions and instructions (main questions displayed visually)
+### 1. Prerequisites
+* **Node.js**: v18.x or higher
+* **npm**: v9.x or higher
+* **MongoDB**: Atlas Cluster or Local instance
+* **Browser**: Google Chrome or Chromium-based browser (for Web Speech API support)
 
-Conversation History: Complete transcript of interview interactions
+### 2. Backend Setup
+```bash
+# Navigate to server directory
+cd server
 
-Loop Prevention: Smart logic prevents endless clarification cycles
+# Install dependencies
+npm install
 
-💻 Integrated Development Environment
-Multi-Language Support: Java, Python, C++, JavaScript, SQL
+# Start development server
+npm start
+```
+The backend server will run on `http://localhost:3000`.
 
-Real-time Code Editor: Monaco Editor with syntax highlighting and IntelliSense
+### 3. Frontend Setup
+```bash
+# Navigate to client application
+cd client/Intervue
 
-Auto-save: Code automatically saved throughout the interview
+# Install dependencies
+npm install
 
-Smart Language Detection: Default language selection based on interview topic
+# Start Vite dev server
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
 
-🔒 Security & Monitoring
-Fullscreen Enforcement: Interview must be conducted in fullscreen mode
+---
 
-Tab Switch Detection: Monitors and warns against tab switching (3 strikes policy)
+## 🔌 API Endpoints Summary
 
-Camera Monitoring: Mandatory camera-on policy for interview integrity
+### 🔐 Authentication & User Routes (`/api/auth`, `/api/user`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/signup` | Register a new candidate account |
+| `POST` | `/api/auth/login` | Authenticate and obtain JWT token |
+| `POST` | `/api/auth/logout` | Clear user session cookies |
+| `GET` | `/api/user/profile` | Fetch active user profile data |
+| `PATCH` | `/api/user/profile` | Update profile information |
+| `DELETE`| `/api/user/account` | Permanently delete user account |
 
-Violation Tracking: Comprehensive logging of all security violations
+### 🎙️ Interview Management (`/api/interview`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/interview/start/:topic` | Initialize a new AI interview session |
+| `GET` | `/api/interview/session/:interviewId` | Fetch existing interview session details |
+| `GET` | `/api/interview/get-history` | List all past interviews for user |
+| `PATCH` | `/api/interview/save-code` | Auto-save code editor contents |
+| `POST` | `/api/interview/generate-contextual-response` | Evaluate speech & code for AI response |
+| `POST` | `/api/interview/get-next-question` | Move to next question in session |
+| `POST` | `/api/interview/finalize-question` | Complete current question evaluation |
 
-📊 Performance Analytics
-20-Point Scoring: Each question scored out of 20 marks across 4 categories
+### 📊 Feedback Routes (`/api/feedback`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/feedback/:interviewId` | Retrieve saved performance feedback |
+| `POST` | `/api/feedback/generate/:interviewId` | Generate dynamic Gemini feedback report |
 
-Technical Accuracy Analysis: AI evaluates correctness of solutions and explanations
+---
 
-Code Quality Assessment: Analysis of coding practices and optimization
+## 📈 Evaluation & Grading Rubric
 
-Communication Evaluation: Assessment of explanation clarity and detail
+Each completed interview session is evaluated out of **100 points** (20 points × 5 questions):
 
-Career Recommendations: Personalized guidance for skill improvement
+| Category | Points | Evaluation Focus |
+| :--- | :--- | :--- |
+| **Technical Accuracy** | 8 pts | Correctness of theoretical concepts, edge cases, and algorithm logic |
+| **Code Quality** | 6 pts | Syntax correctness, efficiency, data structure choices, and clean code principles |
+| **Communication** | 4 pts | Clarity of verbal explanation, structured thought process, and technical depth |
+| **Problem Solving** | 2 pts | Methodical approach, trade-off analysis, and adaptability |
 
-🛠️ Tech Stack
-Frontend
-React 18 - Modern UI library with hooks
+---
 
-React Router - Client-side routing
+## 📄 License
 
-Monaco Editor - VS Code-powered code editor
-
-Lottie React - High-quality animations
-
-Tailwind CSS - Utility-first CSS framework
-
-Lucide Icons - Beautiful, customizable icons
-
-Axios - HTTP client for API calls
-
-Backend
-Node.js - Runtime environment
-
-Express.js - Web application framework
-
-MongoDB - Document-based database
-
-Mongoose - MongoDB object modeling
-
-Google Gemini AI - Advanced language model for intelligent responses
-
-Node-cron - Scheduled task management
-
-Nodemailer - Email service integration
-
-APIs & Services
-Web Speech API - Browser-based speech recognition and synthesis
-
-Google Generative AI - Question generation and response analysis
-
-Navigator MediaDevices - Camera and microphone access
-
-📋 Prerequisites
-Node.js (v16.0 or higher)
-
-MongoDB (v4.4 or higher)
-
-Modern web browser with Web Speech API support
-
-Microphone and camera access
-
-Google AI API key (Gemini)
-
-🎮 Usage
-Starting an Interview
-Register/Login to your account
-
-Select Topic from available subjects (DSA, JavaScript, Python, etc.)
-
-You can also schedule an Interview
-
-Read Rules carefully before starting
-
-Grant Permissions for microphone and camera access
-
-Enter Fullscreen mode to begin
-
-During the Interview
-Read Questions displayed on screen
-
-Write Code in the integrated editor
-
-Speak Your Answer by turning ON the microphone
-
-Submit Response by turning OFF the microphone
-
-Receive AI Feedback and follow-up questions
-
-Continue until all questions are completed
-
-Interview Controls
-🎤 Microphone Toggle: ON to speak, OFF to submit
-
-📹 Camera Status: Always ON (cannot be disabled)
-
-⏱️ Timer: 40-minute interview duration
-
-🔚 End Interview: Confirm to finish early
-
-AI Interaction Commands
-Say "next question" to proceed to next question
-
-Say "repeat" to hear the question again
-
-Ask for clarification naturally
-
-Request explanations of concepts
-
-📊 Feedback System
-Scoring Breakdown (20 points per question)
-Technical Accuracy (8 points): Correctness of solution and understanding
-
-Code Quality (6 points): Clean code, best practices, efficiency
-
-Communication (4 points): Clear explanations and reasoning
-
-Problem Solving (2 points): Approach and methodology
-
-Feedback Categories
-Overall Score: Weighted average across all questions
-
-Strengths: Areas of strong performance
-
-Improvements: Specific areas for development
-
-Question Analysis: Detailed breakdown per question
-
-Career Recommendations: Personalized guidance for growth
+Distributed under the **MIT License**. See `LICENSE` for more information.
