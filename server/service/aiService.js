@@ -11,10 +11,21 @@ const safetySettings = [
 
 const MODEL_NAME = "gemini-2.5-flash";
 
-async function generateAIResponse(topic, count = 5) {
-    console.log('🤖 Generating AI questions with gemini-2.5-flash');
+async function generateAIResponse(topic, count = 5, difficulty = 'intermediate') {
+    console.log(`🤖 Generating AI questions (${difficulty.toUpperCase()} level) with gemini-2.5-flash`);
 
-    const prompt = `You are an expert technical interviewer. Generate ${count} challenging interview questions on: "${topic}".
+    let difficultyInstruction = "";
+    if (difficulty === 'junior') {
+        difficultyInstruction = "TARGET LEVEL: JUNIOR / ENTRY-LEVEL. Focus on fundamental concepts, basic syntax, core data structures, straightforward algorithmic logic, and beginner-friendly practical scenarios. Keep questions accessible yet test basic proficiency.";
+    } else if (difficulty === 'senior') {
+        difficultyInstruction = "TARGET LEVEL: SENIOR / STAFF EXPERT. Focus on advanced architectural trade-offs, complex edge cases, low-level optimization, concurrency/thread safety, memory bottlenecks, high-scale scenarios, and expert technical design.";
+    } else {
+        difficultyInstruction = "TARGET LEVEL: MID-LEVEL / INTERMEDIATE. Focus on standard computer science core concepts, optimal data structure selection, medium algorithmic complexity, and practical system trade-offs.";
+    }
+
+    const prompt = `You are an expert technical interviewer. Generate ${count} technical interview questions on: "${topic}".
+
+${difficultyInstruction}
 
 Return ONLY a JSON array like this:
 [

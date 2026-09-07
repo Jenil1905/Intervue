@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { FaArrowLeft, FaBell, FaRobot, FaMicrophone, FaLock, FaTrashAlt, FaCheckCircle, FaExclamationTriangle, FaVolumeUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { getUserProfile } from '../../apiCalls/userCall';
+import { getUserProfile, updateUserSettings, changePassword } from '../../apiCalls/userCall';
 
 function Settings() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isSavingPrefs, setIsSavingPrefs] = useState(false);
     const [toast, setToast] = useState(null);
 
     // Settings States
     const [notifications, setNotifications] = useState({
         emailReminders: true,
         performanceDigests: true,
-        newFeatureAnnouncements: false
     });
 
     const [aiPreferences, setAiPreferences] = useState({
@@ -42,7 +42,21 @@ function Settings() {
         async function fetchUser() {
             try {
                 const res = await getUserProfile();
-                setUser(res.data.user);
+                const fetchedUser = res.data.user;
+                setUser(fetchedUser);
+                
+                if (fetchedUser?.settings) {
+                    setNotifications({
+                        emailReminders: fetchedUser.settings.emailReminders ?? true,
+                        performanceDigests: fetchedUser.settings.performanceDigests ?? true,
+                    });
+                    setAiPreferences({
+                        difficulty: fetchedUser.settings.difficulty || 'intermediate',
+                        feedbackDepth: fetchedUser.settings.feedbackDepth || 'detailed',
+                        autoVoice: fetchedUser.settings.autoVoice ?? true,
+                        speechRate: fetchedUser.settings.speechRate || '1.0'
+                    });
+                }
             } catch (err) {
                 console.error("Failed to load settings profile:", err);
             } finally {
@@ -52,12 +66,28 @@ function Settings() {
         fetchUser();
     }, []);
 
-    const handleSavePreferences = (e) => {
+    const handleSavePreferences = async (e) => {
         e.preventDefault();
-        showToast('Settings saved successfully!');
+        setIsSavingPrefs(true);
+        try {
+            const settingsData = {
+                ...notifications,
+                ...aiPreferences
+            };
+            const response = await updateUserSettings(settingsData);
+            if (response.data?.user) {
+                setUser(response.data.user);
+            }
+            showToast('Settings & difficulty preferences saved! AI will generate ' + aiPreferences.difficulty.toUpperCase() + ' questions.');
+        } catch (err) {
+            console.error("Failed to save settings:", err);
+            showToast(err.response?.data?.message || 'Failed to save settings.', 'error');
+        } finally {
+            setIsSavingPrefs(false);
+        }
     };
 
-    const handlePasswordChange = (e) => {
+    const handlePasswordChange = async (e) => {
         e.preventDefault();
         if (!passwords.current || !passwords.newPass || !passwords.confirmPass) {
             showToast('Please fill in all password fields.', 'error');
@@ -73,11 +103,19 @@ function Settings() {
         }
 
         setIsSavingPass(true);
-        setTimeout(() => {
-            setIsSavingPass(false);
+        try {
+            await changePassword({
+                currentPassword: passwords.current,
+                newPassword: passwords.newPass
+            });
             setPasswords({ current: '', newPass: '', confirmPass: '' });
-            showToast('Password updated successfully!');
-        }, 1200);
+            showToast('Password changed successfully!');
+        } catch (err) {
+            console.error("Failed to change password:", err);
+            showToast(err.response?.data?.message || 'Failed to update password.', 'error');
+        } finally {
+            setIsSavingPass(false);
+        }
     };
 
     const testMicrophone = () => {
@@ -257,9 +295,10 @@ function Settings() {
                     <div className="flex justify-end">
                         <button 
                             type="submit" 
-                            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition-colors"
+                            disabled={isSavingPrefs}
+                            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition-colors disabled:opacity-50 flex items-center gap-2"
                         >
-                            Save Preferences
+                            {isSavingPrefs ? 'Saving...' : 'Save Preferences'}
                         </button>
                     </div>
                 </form>

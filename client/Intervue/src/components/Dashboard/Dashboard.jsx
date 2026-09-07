@@ -499,30 +499,60 @@ function Dashboard() {
                         </div>
 
                         <div className="relative z-10 w-full md:w-auto">
-                            <div className="relative">
-                                <button 
-                                    onClick={() => setIsCalendarOpen(!isCalendarOpen)} 
-                                    className="w-full sm:w-auto bg-white text-gray-900 font-semibold px-6 py-3.5 rounded-2xl shadow-lg hover:bg-gray-100 transition-all flex items-center justify-center gap-3"
-                                >
-                                    <FaCalendarAlt className="text-blue-600" />
-                                    <span>Schedule an Interview</span>
-                                    <FaChevronDown className={`transition-transform duration-200 ${isCalendarOpen ? 'rotate-180' : ''}`} />
-                                </button>
-
-                                {isCalendarOpen && (
-                                    <div className="absolute right-0 top-full mt-3 z-30 bg-white shadow-2xl rounded-2xl border p-2 animate-fadeIn text-gray-800">
-                                        <Calendar 
-                                            onChange={handleDateSelect} 
-                                            value={date} 
-                                            minDate={new Date()} 
-                                            tileContent={tileContent} 
-                                            tileClassName={tileClassName} 
-                                        />
-                                    </div>
-                                )}
-                            </div>
+                            <button 
+                                onClick={() => setIsCalendarOpen(true)} 
+                                className="w-full sm:w-auto bg-white text-gray-900 font-semibold px-6 py-3.5 rounded-2xl shadow-lg hover:bg-gray-100 transition-all flex items-center justify-center gap-3 cursor-pointer"
+                            >
+                                <FaCalendarAlt className="text-blue-600" />
+                                <span>Schedule an Interview</span>
+                            </button>
                         </div>
                     </div>
+
+                    {/* Upcoming Scheduled Sessions Section */}
+                    {scheduledInterviews.length > 0 && (
+                        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200/80 shadow-xs">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                        <FaCalendarAlt className="text-blue-600" />
+                                        <span>Upcoming Scheduled Sessions</span>
+                                    </h3>
+                                    <p className="text-sm text-gray-500">Your booked AI technical interview practice slots.</p>
+                                </div>
+                                <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                                    {scheduledInterviews.length} Scheduled
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {scheduledInterviews.map((item) => (
+                                    <div key={item._id} className="p-4 border border-blue-100 rounded-xl bg-blue-50/40 flex flex-col justify-between gap-3">
+                                        <div>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 font-bold text-xs rounded-lg uppercase">
+                                                    {item.topic.replace(/-/g, ' ')}
+                                                </span>
+                                                <span className="text-xs text-gray-500 font-medium">
+                                                    {new Date(item.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-800 mt-2 flex items-center gap-1.5">
+                                                <FaCalendarAlt size={14} className="text-blue-500" />
+                                                {new Date(item.scheduledTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleStartInterview(item.topic)}
+                                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-medium transition-colors shadow-xs cursor-pointer"
+                                        >
+                                            Start Session Now
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Topics Grid */}
                     <div>
@@ -682,6 +712,37 @@ function Dashboard() {
                 interviews={interviews} 
                 onSelectInterview={(i) => navigate(`/feedback/${i._id}`)} 
             />
+            {/* Calendar Selection Modal */}
+            {isCalendarOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md text-gray-800 shadow-2xl relative border border-gray-100">
+                        <button 
+                            onClick={() => setIsCalendarOpen(false)}
+                            className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                        >
+                            <FaTimes size={18} />
+                        </button>
+                        <div className="mb-6 flex items-center gap-3">
+                            <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl">
+                                <FaCalendarAlt size={22} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">Select Date</h3>
+                                <p className="text-xs text-gray-500">Choose a day for your upcoming AI mock interview</p>
+                            </div>
+                        </div>
+                        <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200/80 flex justify-center shadow-inner">
+                            <Calendar 
+                                onChange={handleDateSelect} 
+                                value={date} 
+                                minDate={new Date()} 
+                                tileContent={tileContent} 
+                                tileClassName={tileClassName} 
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

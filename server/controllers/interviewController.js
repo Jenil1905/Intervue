@@ -3,12 +3,19 @@ const { generateAIResponse, generateCrossQuestion, generateContextualResponse } 
 
 // ===== EXISTING FUNCTIONS =====
 
+const User = require('./../models/user.model.js');
+
 const startInterview = async (req, res) => {
     try {
         const { topic } = req.params;
         const userId = req.userId;
 
-        const questions = await generateAIResponse(topic);
+        // Fetch user preferences from database
+        const user = await User.findById(userId);
+        const difficulty = user?.settings?.difficulty || 'intermediate';
+        const feedbackDepth = user?.settings?.feedbackDepth || 'detailed';
+
+        const questions = await generateAIResponse(topic, 5, difficulty);
         
         if (!Array.isArray(questions) || questions.length === 0) {
             return res.status(500).json({ error: "AI service failed to generate questions." });
@@ -17,7 +24,6 @@ const startInterview = async (req, res) => {
         const formattedQuestions = questions.map((q, index) => ({
             qNo: q.qNo || index + 1,
             question: q.question || "No question text provided.", 
-            // Your model defaults (userCode: "", etc.) will be applied here
         }));
 
         const interview = await Interview.create({
@@ -27,10 +33,12 @@ const startInterview = async (req, res) => {
             currentQIndex: 0,
             totalQuestions: formattedQuestions.length,
             timeLimit: 2400,
-            overallStatus: 'inProgress', // From your latest model
+            overallStatus: 'inProgress',
             aiSettings: {
                 useContextualResponses: true,
-                maxFollowUps: 1
+                maxFollowUps: 1,
+                difficulty: difficulty,
+                feedbackDepth: feedbackDepth
             }
         });
 
@@ -38,7 +46,8 @@ const startInterview = async (req, res) => {
             interviewId: interview._id,
             currentQuestion: interview.questions[0],
             totalQuestions: interview.questions.length,
-            timeLimit: 2400
+            timeLimit: 2400,
+            difficulty: difficulty
         });
 
     } catch (err) { 

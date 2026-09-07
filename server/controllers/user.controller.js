@@ -74,4 +74,65 @@ const updateUsername = async (req,res)=>{
     }
 };
 
-module.exports = {getCurrentUser, updateUserPhone, updateUsername, updateUserProfilePicture};
+// update user settings
+const updateUserSettings = async (req, res) => {
+    try {
+        const { settings } = req.body;
+        if (!settings) {
+            return res.status(400).json({ message: "Settings object is required" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.userId,
+            { $set: { settings } },
+            { new: true }
+        ).select('-password');
+
+        return res.status(200).json({ message: "Settings updated successfully", user: updatedUser });
+    } catch (error) {
+        console.error("Error updating settings:", error);
+        return res.status(500).json({ message: 'Server error updating settings' });
+    }
+};
+
+// change password
+const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: "Both current and new passwords are required" });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: "New password must be at least 6 characters long" });
+        }
+
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const bcrypt = require('bcrypt');
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Incorrect current password" });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save();
+
+        return res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        console.error("Error changing password:", error);
+        return res.status(500).json({ message: 'Server error changing password' });
+    }
+};
+
+module.exports = {
+    getCurrentUser, 
+    updateUserPhone, 
+    updateUsername, 
+    updateUserProfilePicture,
+    updateUserSettings,
+    changePassword
+};
