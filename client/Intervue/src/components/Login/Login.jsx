@@ -14,33 +14,39 @@ function Login() {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [errorMsg, setErrorMsg] = React.useState('');
 
     // Handle login
     async function handleSubmit(e) {    
         e.preventDefault();
+        setErrorMsg('');
         if (!email || !password) {
-            alert("Please fill in all fields");
+            setErrorMsg("Please fill in all fields");
             return;
         }
         if (password.length < 6) {
-            alert("Password must be at least 6 characters long");
+            setErrorMsg("Password must be at least 6 characters long");
             return;
         }
         const credentials = { email, password };
+        setIsLoading(true);
         try {
             const response = await login(credentials);
             if (response.status === 200) {
-                // Login successful, navigate to dashboard
-                alert("Login successful!");
+                if (response.data?.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
                 navigate('/dashboard');
             } else {
-                console.error("Login failed with status:", response.status);
+                setErrorMsg("Login failed. Please check your credentials.");
             }
-            // Reset form fields
-            setEmail('');
-            setPassword('');
         } catch (error) {
             console.error("Error during login:", error);
+            const msg = error.response?.data?.message || "Invalid credentials or server error. Please try again.";
+            setErrorMsg(msg);
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -104,13 +110,22 @@ function Login() {
                     <p className='text-gray-600 text-center mb-6 sm:mb-8 text-sm sm:text-base'>
                         Sign in to continue your interview preparation journey
                     </p>
+
+                    {/* Error Banner */}
+                    {errorMsg && (
+                        <div className='mb-6 p-4 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-medium animate-fadeIn flex items-center justify-between'>
+                            <span>{errorMsg}</span>
+                            <button onClick={() => setErrorMsg('')} className='text-red-500 hover:text-red-700 font-bold ml-2'>&times;</button>
+                        </div>
+                    )}
                     
-                    <div className='flex flex-col gap-4 sm:gap-6'>
+                    <form onSubmit={handleSubmit} className='flex flex-col gap-4 sm:gap-6'>
                         <div className='relative'>
                             <input
                                 type='email'
                                 placeholder='Email Address'
-                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base'
+                                disabled={isLoading}
+                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base disabled:bg-gray-100'
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
@@ -121,7 +136,8 @@ function Login() {
                             <input
                                 type={showPassword ? "text" : "password"}
                                 placeholder='Password'
-                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base'
+                                disabled={isLoading}
+                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base disabled:bg-gray-100'
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -134,23 +150,21 @@ function Login() {
                             </button>
                         </div>
 
-                        {/* Forgot Password Link */}
-                        <div className='flex justify-end'>
-                            <button 
-                                type='button'
-                                className='text-blue-600 hover:text-blue-700 text-sm hover:underline transition-colors duration-200'
-                            >
-                                Forgot Password?
-                            </button>
-                        </div>
-
                         <button
-                            onClick={handleSubmit}
-                            className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-3 sm:p-4 mt-2 sm:mt-4 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-semibold text-sm sm:text-base'
+                            type='submit'
+                            disabled={isLoading}
+                            className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-3 sm:p-4 mt-2 sm:mt-4 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-semibold text-sm sm:text-base flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed'
                         >
-                            Sign In
+                            {isLoading ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span>Signing In...</span>
+                                </>
+                            ) : (
+                                <span>Sign In</span>
+                            )}
                         </button>
-                    </div>
+                    </form>
 
                     {/* Social Login Options */}
                     <div className='mt-6 sm:mt-8'>

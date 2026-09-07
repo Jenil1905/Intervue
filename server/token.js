@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 async function generateToken(id){
-    return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: '30d'});
+    const secret = process.env.JWT_SECRET || 'intervue_secret_key_2026';
+    return jwt.sign({id}, secret, {expiresIn: '30d'});
 }
 
 module.exports = generateToken;

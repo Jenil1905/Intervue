@@ -17,10 +17,10 @@ async function getInterviewById(req, res) {
         }
 
         // Calculate time left
-        const timeLimit = 2400; // 40 minutes in seconds
-        const startedAt = new Date(interview.startedAt);
+        const timeLimit = interview.timeLimit || 2400; // 40 minutes default
+        const startedAtTime = interview.startedAt ? new Date(interview.startedAt) : (interview.createdAt ? new Date(interview.createdAt) : new Date());
         const now = new Date();
-        const elapsedSeconds = Math.floor((now - startedAt) / 1000);
+        const elapsedSeconds = Math.floor((now - startedAtTime) / 1000);
         const timeLeft = Math.max(0, timeLimit - elapsedSeconds);
 
         // Send interview data to client

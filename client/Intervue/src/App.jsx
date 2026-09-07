@@ -8,6 +8,7 @@ import Profile from './components/Profile/Profile.jsx'
 import ProtectedRoutes from './components/ProtectedRoutes/ProtectedRoutes.jsx'
 import Home from './components/Home/Home.jsx'
 import Feedback from './components/Feedback/Feedback.jsx'
+import Settings from './components/Settings/Settings.jsx'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/interview/:topic" element={<Interview />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/feedback/:interviewId" element={<Feedback />} />
         </Route>
       </Routes>

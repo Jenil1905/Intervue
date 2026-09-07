@@ -52,34 +52,39 @@ app.use('/api/interview', interviewRoutes);
 app.use('/api/schedule-interviews', scheduleInterviewRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
-// ✅ Cron job for sending interview reminders
-cron.schedule('0 8 * * *', async () => {
-  console.log('Running a check for scheduled interviews...');
-
+// ✅ Cron job for sending interview reminders (runs every minute)
+cron.schedule('* * * * *', async () => {
   try {
     const now = new Date();
-    const oneMinuteFromNow = new Date(now.getTime() + 60 * 1000);
+    const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60 * 1000);
 
     const upcomingInterviews = await ScheduleInterview.find({
-      scheduledTime: { $gte: now, $lt: oneMinuteFromNow },
+      scheduledTime: { $gte: now, $lte: fifteenMinutesFromNow },
       status: 'scheduled',
       reminderSent: false
     }).populate('userId', 'email name');
 
     for (const interview of upcomingInterviews) {
+      if (!interview.userId || !interview.userId.email) continue;
+
+      const formattedTopic = interview.topic.replace(/-/g, ' ').toUpperCase();
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"Intervue Reminder" <${process.env.EMAIL_USER}>`,
         to: interview.userId.email,
-        subject: `Reminder: Your ${interview.topic} Interview is starting now!`,
+        subject: `⏰ Reminder: Your ${formattedTopic} Interview is starting soon!`,
         html: `
-          <h1>Hi ${interview.userId.name},</h1>
-          <p>This is a reminder that your interview on <b>${interview.topic.replace(/-/g, ' ')}</b> is scheduled to begin now.</p>
-          <p>Good luck!</p>
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #2563eb;">Interview Reminder! ⏰</h2>
+            <p>Hi <b>${interview.userId.name}</b>,</p>
+            <p>This is a reminder that your mock interview on <b>${formattedTopic}</b> is starting soon!</p>
+            <p>Make sure your microphone is ready and you are in a quiet environment.</p>
+            <a href="https://intervue-frontend-ten.vercel.app/dashboard" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 15px;">Join Interview Now</a>
+          </div>
         `
       };
 
       await transporter.sendMail(mailOptions);
-      console.log(`Reminder email sent to ${interview.userId.email}`);
+      console.log(`Reminder email sent to ${interview.userId.email} for ${formattedTopic}`);
 
       interview.reminderSent = true;
       await interview.save();

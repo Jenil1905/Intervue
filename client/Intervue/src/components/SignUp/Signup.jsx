@@ -15,34 +15,40 @@ function Signup() {
         navigate('/login')
     }
 
-    //Handle Signup
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+
+    // Handle Signup
     async function handleSubmit(e) {
         e.preventDefault();
+        setErrorMsg('');
         if (!name || !email || !password) {
-            alert("Please fill in all fields");
+            setErrorMsg("Please fill in all fields");
             return;
         }
         if (password.length < 6) {
-            alert("Password must be at least 6 characters long");
+            setErrorMsg("Password must be at least 6 characters long");
             return;
         }
         // Prepare user data
         const userData = { name, email, password };
+        setIsLoading(true);
         try {
             const response = await signup(userData);
             if (response.status === 201) {
-                // Signup successful, navigate to login page
-                alert("Signup successful!");
+                if (response.data?.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
                 navigate('/dashboard');
             } else {
-                console.error("Signup failed with status:", response.status);
+                setErrorMsg("Signup failed. Please try again.");
             }
-            // Reset form fields
-            setName('');
-            setEmail('');
-            setPassword('');
         } catch (error) {
             console.error("Error during signup:", error);
+            const msg = error.response?.data?.message || "Error creating account. Email may already be in use.";
+            setErrorMsg(msg);
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -106,13 +112,22 @@ function Signup() {
                     <p className='text-gray-600 text-center mb-6 sm:mb-8 text-sm sm:text-base'>
                         Join thousands of students preparing for technical interviews
                     </p>
+
+                    {/* Error Alert Banner */}
+                    {errorMsg && (
+                        <div className='mb-6 p-4 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-medium animate-fadeIn flex items-center justify-between'>
+                            <span>{errorMsg}</span>
+                            <button onClick={() => setErrorMsg('')} className='text-red-500 hover:text-red-700 font-bold ml-2'>&times;</button>
+                        </div>
+                    )}
                     
-                    <div className='flex flex-col gap-4 sm:gap-6'>
+                    <form onSubmit={handleSubmit} className='flex flex-col gap-4 sm:gap-6'>
                         <div className='relative'>
                             <input
                                 type='text'
                                 placeholder='Full Name'
-                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base'
+                                disabled={isLoading}
+                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base disabled:bg-gray-100'
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                             />
@@ -122,7 +137,8 @@ function Signup() {
                             <input
                                 type='email'
                                 placeholder='Email Address'
-                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base'
+                                disabled={isLoading}
+                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base disabled:bg-gray-100'
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
@@ -133,7 +149,8 @@ function Signup() {
                             <input
                                 type={showPassword ? "text" : "password"}
                                 placeholder='Password (min. 6 characters)'
-                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base'
+                                disabled={isLoading}
+                                className='w-full border-2 border-gray-200 rounded-xl p-3 sm:p-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 text-sm sm:text-base disabled:bg-gray-100'
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -147,12 +164,20 @@ function Signup() {
                         </div>
 
                         <button
-                            onClick={handleSubmit}
-                            className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-3 sm:p-4 mt-2 sm:mt-4 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-semibold text-sm sm:text-base'
+                            type='submit'
+                            disabled={isLoading}
+                            className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-3 sm:p-4 mt-2 sm:mt-4 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-semibold text-sm sm:text-base flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed'
                         >
-                            Create Account
+                            {isLoading ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span>Creating Account...</span>
+                                </>
+                            ) : (
+                                <span>Create Account</span>
+                            )}
                         </button>
-                    </div>
+                    </form>
 
                     {/* Terms and Privacy */}
                     <p className='text-xs sm:text-sm text-gray-500 text-center mt-4 sm:mt-6 leading-relaxed'>

@@ -1,43 +1,36 @@
-import axios from "axios";
-import { API_BASE_URL } from "./config";
-
-// Interceptors (helps in sending cookies and credentials with every request)
-const api = axios.create({
-    baseURL: API_BASE_URL,
-    withCredentials: true,
-});
+import axiosClient from "./axiosClient.js";
 
 // ===== EXISTING FUNCTIONS =====
 
 export const startInterview = (topic) => {
-    return api.post(`/api/interview/start/${topic}`);
+    return axiosClient.post(`/api/interview/start/${topic}`);
 };
 
 export const getInterviewHistory = () => {
-    return api.get(`/api/interview/get-history`);
+    return axiosClient.get(`/api/interview/get-history`);
 };
 
 export const saveUserCode = (interviewId, questionNo, userCode) => {
-    return api.patch('/api/interview/save-code', { interviewId, questionNo, userCode });
+    return axiosClient.patch('/api/interview/save-code', { interviewId, questionNo, userCode });
 };
 
 export const saveSpokenAnswer = (interviewId, questionNo, spokenAnswer) => {
-    return api.patch('/api/interview/save-spoken-answer', { interviewId, questionNo, spokenAnswer });
+    return axiosClient.patch('/api/interview/save-spoken-answer', { interviewId, questionNo, spokenAnswer });
 };
 
 export const submitAnswer = (interviewId, currentQuestionNo) => {
-    return api.post('/api/interview/submit-answer', { interviewId, currentQuestionNo });
+    return axiosClient.post('/api/interview/submit-answer', { interviewId, currentQuestionNo });
 };
 
 export const saveCrossQuestionAnswer = (interviewId, questionNo, crossQuestionAnswer) => {
-    return api.patch('/api/interview/save-cross-question-answer', { interviewId, questionNo, crossQuestionAnswer });
+    return axiosClient.patch('/api/interview/save-cross-question-answer', { interviewId, questionNo, crossQuestionAnswer });
 };
 
 // ===== NEW CONTEXTUAL AI FUNCTIONS =====
 
 export const generateContextualResponse = async (transcript, question, questionPhase, interviewId, conversationHistory, questionNumber, topic) => {
   try {
-    const response = await api.post('/api/interview/generate-contextual-response', {
+    const response = await axiosClient.post('/api/interview/generate-contextual-response', {
       transcript,
       question,
       questionPhase,
@@ -61,7 +54,7 @@ export const generateContextualResponse = async (transcript, question, questionP
 
 export const saveConversationMessage = async (interviewId, questionNo, transcript, role, currentQuestion) => {
   try {
-    const response = await api.post('/api/interview/save-conversation', {
+    const response = await axiosClient.post('/api/interview/save-conversation', {
       interviewId,
       questionNo,
       transcript,
@@ -78,7 +71,7 @@ export const saveConversationMessage = async (interviewId, questionNo, transcrip
 
 export const getNextMainQuestion = async (interviewId, currentQuestionNo, topic) => {
   try {
-    const response = await api.post('/api/interview/get-next-question', {
+    const response = await axiosClient.post('/api/interview/get-next-question', {
       interviewId,
       currentQuestionNo,
       topic
@@ -93,7 +86,7 @@ export const getNextMainQuestion = async (interviewId, currentQuestionNo, topic)
 
 export const finalizeCurrentQuestion = async (interviewId, questionNo) => {
   try {
-    const response = await api.post('/api/interview/finalize-question', {
+    const response = await axiosClient.post('/api/interview/finalize-question', {
       interviewId,
       questionNo
     });

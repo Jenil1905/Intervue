@@ -19,16 +19,17 @@ const updateUsername = async (req,res)=>{
     try{
         const {name} = req.body
         if(!name){
-            res.status(400).json({message:"Name is required"})
+            return res.status(400).json({message:"Name is required"});
         }
-        const updatedUser = User.findByIdAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
             req.userId,
-             { name },
+            { name },
             { new: true }
-        )
-        res.status(200).json({message:"User updated successfully", user:updatedUser})
+        ).select('-password');
+        return res.status(200).json({message:"User updated successfully", user:updatedUser});
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error("Error updating username:", error);
+        return res.status(500).json({ message: 'Server error' });
     }
 }
 

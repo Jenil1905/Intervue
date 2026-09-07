@@ -86,6 +86,18 @@ const interviewSchema = new mongoose.Schema({
     type: Number,
     default: 2400 // 40 minutes in seconds
   },
+  startedAt: {
+    type: Date,
+    default: Date.now
+  },
+  feedback: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  feedbackGeneratedAt: {
+    type: Date,
+    default: null
+  },
   aiSettings: {
     useContextualResponses: {
       type: Boolean,
@@ -96,13 +108,13 @@ const interviewSchema = new mongoose.Schema({
       default: 1
     },
     feedback: {
-    type: mongoose.Schema.Types.Mixed,
-    default: null
-  },
-  feedbackGeneratedAt: {
-    type: Date,
-    default: null
-  }
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
+    feedbackGeneratedAt: {
+      type: Date,
+      default: null
+    }
   }
 }, { timestamps: true }); 
 

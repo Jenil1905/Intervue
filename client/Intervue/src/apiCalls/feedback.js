@@ -1,19 +1,13 @@
-import axios from 'axios';
-import { API_BASE_URL } from './config';
+import axiosClient from './axiosClient.js';
 
 // ✅ GENERATE INTERVIEW FEEDBACK
 export const generateInterviewFeedback = async (interviewId, completionData) => {
     try {
         console.log('📊 Generating feedback for interview:', interviewId);
         
-        const response = await axios.post(
-            `${API_BASE_URL}/feedback/generate/${interviewId}`,
-            completionData,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }
+        const response = await axiosClient.post(
+            `/api/feedback/generate/${interviewId}`,
+            completionData
         );
         
         return response.data;
@@ -28,7 +22,7 @@ export const getInterviewFeedback = async (interviewId) => {
     try {
         console.log('🔍 Fetching feedback for interview:', interviewId);
         
-        const response = await axios.get(`${API_BASE_URL}/feedback/${interviewId}`);
+        const response = await axiosClient.get(`/api/feedback/${interviewId}`);
         
         return response.data;
     } catch (error) {
