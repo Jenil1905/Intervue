@@ -120,9 +120,9 @@ NO OTHER TEXT. JUST THE JSON.`;
             
             console.log('🤖 Raw feedback response length:', rawText.length);
             
-            // Extract JSON
+            // Extract JSON cleanly
             let cleanText = rawText.trim();
-            cleanText = cleanText.replace(/``````/g, '');
+            cleanText = cleanText.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```$/, '').trim();
             
             const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("No JSON found in response");
@@ -131,7 +131,7 @@ NO OTHER TEXT. JUST THE JSON.`;
             const parsed = JSON.parse(jsonString);
 
             // Validate structure
-            if (!parsed.overallScore || !parsed.questionFeedback || !Array.isArray(parsed.questionFeedback)) {
+            if (typeof parsed.overallScore !== 'number' || !parsed.questionFeedback || !Array.isArray(parsed.questionFeedback)) {
                 throw new Error("Invalid feedback structure");
             }
             

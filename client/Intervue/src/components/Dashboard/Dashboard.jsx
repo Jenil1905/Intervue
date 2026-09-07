@@ -165,7 +165,7 @@ function HistoryModal({ isOpen, onClose, interviews, onSelectInterview }) {
 
 function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || 'null'));
     const [interviews, setInterviews] = useState([]);
     const [scheduledInterviews, setScheduledInterviews] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -223,7 +223,10 @@ function Dashboard() {
                     getInterviewHistory(),
                     getScheduledInterviews()
                 ]);
-                setUser(profileRes.data.user);
+                if (profileRes.data?.user) {
+                    setUser(profileRes.data.user);
+                    localStorage.setItem('user', JSON.stringify(profileRes.data.user));
+                }
                 setInterviews(historyRes.data.interviews || []);
                 setScheduledInterviews(scheduleRes.data.interviews || []);
             } catch (error) {
@@ -448,7 +451,7 @@ function Dashboard() {
                     <div className="flex items-center gap-4">
                         <div className="text-right">
                             <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                {loading ? "Welcome back!" : `Welcome, ${user?.name || "Candidate"}!`}
+                                {user?.name ? `Welcome, ${user.name}!` : "Welcome back!"}
                             </h2>
                             <p className="text-xs text-gray-500 hidden sm:block">Ready to practice your next technical interview?</p>
                         </div>

@@ -102,8 +102,12 @@ const changePassword = async (req, res) => {
         if (!currentPassword || !newPassword) {
             return res.status(400).json({ message: "Both current and new passwords are required" });
         }
-        if (newPassword.length < 6) {
-            return res.status(400).json({ message: "New password must be at least 6 characters long" });
+        
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(newPassword)) {
+            return res.status(400).json({ 
+                message: "New password must be at least 8 characters long and contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character." 
+            });
         }
 
         const user = await User.findById(req.userId);
@@ -128,11 +132,31 @@ const changePassword = async (req, res) => {
     }
 };
 
+// delete account
+const deleteAccount = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const Interview = require('../models/interview.model');
+        
+        if (Interview) {
+            await Interview.deleteMany({ userId });
+        }
+        
+        await User.findByIdAndDelete(userId);
+        res.clearCookie('token');
+        return res.status(200).json({ success: true, message: "Account deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting account:", error);
+        return res.status(500).json({ message: "Server error deleting account" });
+    }
+};
+
 module.exports = {
     getCurrentUser, 
     updateUserPhone, 
     updateUsername, 
     updateUserProfilePicture,
     updateUserSettings,
-    changePassword
+    changePassword,
+    deleteAccount
 };

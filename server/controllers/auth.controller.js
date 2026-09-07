@@ -19,9 +19,12 @@ async function signup(req, res) {
             return res.status(400).json({message: 'User with this email already exists'});
         }
       
-        //validate password length
-        if(password.length < 6){
-            return res.status(400).json({message: 'Password must be at least 6 characters long'});
+        // validate password complexity
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
+                message: 'Password must be at least 8 characters long and contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.'
+            });
         }
     
         //Hash the password

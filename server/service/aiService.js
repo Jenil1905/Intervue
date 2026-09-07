@@ -159,7 +159,7 @@ async function generateContextualResponse(transcript, question, questionPhase, c
                 model: modelName,
                 generationConfig: { 
                     temperature: 0.6, 
-                    maxOutputTokens: 1000 
+                    maxOutputTokens: 350 
                 },
                 safetySettings,
             });

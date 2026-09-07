@@ -29,3 +29,8 @@ export const updateUserSettings = async (settings) => {
 export const changePassword = async (passwordData) => {
     return await axiosClient.post('/api/user/change-password', passwordData);
 };
+
+// Delete account
+export const deleteAccount = async () => {
+    return await axiosClient.delete('/api/user/account');
+};

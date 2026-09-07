@@ -26,8 +26,9 @@ function Signup() {
             setErrorMsg("Please fill in all fields");
             return;
         }
-        if (password.length < 6) {
-            setErrorMsg("Password must be at least 6 characters long");
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            setErrorMsg("Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
             return;
         }
         // Prepare user data
@@ -38,6 +39,9 @@ function Signup() {
             if (response.status === 201) {
                 if (response.data?.token) {
                     localStorage.setItem('token', response.data.token);
+                }
+                if (response.data?.user) {
+                    localStorage.setItem('user', JSON.stringify(response.data.user));
                 }
                 navigate('/dashboard');
             } else {
@@ -178,18 +182,6 @@ function Signup() {
                             )}
                         </button>
                     </form>
-
-                    {/* Terms and Privacy */}
-                    <p className='text-xs sm:text-sm text-gray-500 text-center mt-4 sm:mt-6 leading-relaxed'>
-                        By creating an account, you agree to our{' '}
-                        <span className='text-blue-600 hover:text-blue-700 cursor-pointer underline'>
-                            Terms of Service
-                        </span>{' '}
-                        and{' '}
-                        <span className='text-blue-600 hover:text-blue-700 cursor-pointer underline'>
-                            Privacy Policy
-                        </span>
-                    </p>
                 </div>
             </div>
         </div>

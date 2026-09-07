@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FaArrowLeft, FaBell, FaRobot, FaMicrophone, FaLock, FaTrashAlt, FaCheckCircle, FaExclamationTriangle, FaVolumeUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { getUserProfile, updateUserSettings, changePassword } from '../../apiCalls/userCall';
+import { getUserProfile, updateUserSettings, changePassword, deleteAccount } from '../../apiCalls/userCall';
 
 function Settings() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSavingPrefs, setIsSavingPrefs] = useState(false);
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [toast, setToast] = useState(null);
 
     // Settings States
@@ -97,8 +99,9 @@ function Settings() {
             showToast('New passwords do not match.', 'error');
             return;
         }
-        if (passwords.newPass.length < 6) {
-            showToast('Password must be at least 6 characters.', 'error');
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(passwords.newPass)) {
+            showToast('New password must be 8+ chars with uppercase, lowercase, number, & special character.', 'error');
             return;
         }
 
@@ -115,6 +118,21 @@ function Settings() {
             showToast(err.response?.data?.message || 'Failed to update password.', 'error');
         } finally {
             setIsSavingPass(false);
+        }
+    };
+
+    const handleDeleteAccountConfirm = async () => {
+        setIsDeletingAccount(true);
+        try {
+            await deleteAccount();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            navigate('/signup');
+        } catch (err) {
+            console.error("Failed to delete account:", err);
+            showToast(err.response?.data?.message || 'Failed to delete account.', 'error');
+            setIsDeletingAccount(false);
+            setIsDeleteModalOpen(false);
         }
     };
 
@@ -366,14 +384,47 @@ function Settings() {
                         </button>
                         <button 
                             type="button" 
-                            onClick={() => alert("Account deletion requires confirmation via email.")}
-                            className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-medium transition-colors"
+                            onClick={() => setIsDeleteModalOpen(true)}
+                            className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-medium transition-colors shadow-xs cursor-pointer"
                         >
                             Delete Account
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Delete Account Modal */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md text-gray-800 shadow-2xl border border-rose-100">
+                        <div className="flex items-center gap-3 mb-4 text-rose-600">
+                            <div className="p-3 bg-rose-100 rounded-2xl">
+                                <FaExclamationTriangle size={24} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">Delete Account Permanently?</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                            This action will permanently delete your profile, all interview history, scheduled sessions, and preferences from MongoDB. This action cannot be reversed.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                disabled={isDeletingAccount}
+                                className="px-5 py-2.5 rounded-xl border border-gray-300 font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteAccountConfirm}
+                                disabled={isDeletingAccount}
+                                className="px-6 py-2.5 rounded-xl bg-rose-600 text-white font-medium hover:bg-rose-700 transition-colors shadow-md flex items-center gap-2 disabled:opacity-50 text-sm"
+                            >
+                                {isDeletingAccount ? 'Deleting...' : 'Yes, Delete Account'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -465,18 +465,46 @@ function Interview() {
       return;
     }
     
-    const newMicState = !isMicOn;
-    setIsMicOn(newMicState);
-    
-    if (!newMicState) {
-      console.log("🎤 Mic turned OFF - marking as pending for processing");
-      pendingMicOffRef.current = true;
+    if (isMicOn) {
+      console.log("🎤 Mic turned OFF - submitting current speech & code");
+      setIsMicOn(false);
+      
+      const currentSpeech = finalTranscript.trim();
+      const submissionText = currentSpeech || "Candidate provided response and code.";
+      
+      // Save code immediately
+      if (interviewId && question?.qNo) {
+        saveUserCode(interviewId, question.qNo, code).catch(err => 
+          console.error("Failed to save code on mic off:", err)
+        );
+      }
+      
+      processTranscriptWithAI(submissionText);
     } else {
-      console.log("🎤 Mic turned ON - clearing previous transcript");
+      console.log("🎤 Mic turned ON - ready for response");
       setFinalTranscript('');
-      pendingMicOffRef.current = false;
+      setIsMicOn(true);
     }
-  }, [isMicOn, isEvaluating]);
+  }, [isMicOn, isEvaluating, finalTranscript, interviewId, question?.qNo, code, processTranscriptWithAI]);
+
+  const handleSubmitResponseManual = useCallback(() => {
+    if (isEvaluating || isSubmittingRef.current) return;
+
+    if (isMicOn) {
+      setIsMicOn(false);
+    }
+
+    const currentSpeech = finalTranscript.trim();
+    const submissionText = currentSpeech || "Candidate submitted code and answer.";
+
+    if (interviewId && question?.qNo) {
+      saveUserCode(interviewId, question.qNo, code).catch(err => 
+        console.error("Failed to save code on submit:", err)
+      );
+    }
+
+    processTranscriptWithAI(submissionText);
+  }, [isEvaluating, isMicOn, finalTranscript, interviewId, question?.qNo, code, processTranscriptWithAI]);
 
   const handleCameraToggle = useCallback(() => {
     console.log("Camera toggle blocked - camera must stay on during interview");
@@ -603,22 +631,12 @@ function Interview() {
       let sessionTranscript = '';
       
       for (let i = 0; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          sessionTranscript += transcript + ' ';
-        }
+        sessionTranscript += event.results[i][0].transcript + ' ';
       }
       
       if (sessionTranscript.trim()) {
         const cleanTranscript = sessionTranscript.trim();
-        console.log("🎤 Final transcript captured:", cleanTranscript);
         setFinalTranscript(cleanTranscript);
-        
-        if (pendingMicOffRef.current && !isSubmittingRef.current && !isAiSpeaking && interviewId && question) {
-          console.log("🎤 ✅ PROCESSING TRANSCRIPT AFTER MIC OFF:", cleanTranscript);
-          pendingMicOffRef.current = false;
-          processTranscriptWithAI(cleanTranscript);
-        }
       }
     };
 
@@ -962,6 +980,14 @@ function Interview() {
               </div>
             )}
           </div>
+
+          <button
+            onClick={handleSubmitResponseManual}
+            disabled={isAiSpeaking || isEvaluating}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer text-sm"
+          >
+            Submit Code & Answer
+          </button>
           
           <div className="relative group">
             <button 

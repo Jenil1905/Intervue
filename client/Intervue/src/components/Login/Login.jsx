@@ -1,32 +1,26 @@
-import React from 'react'
-import { FaJava, FaPython, FaJsSquare, FaEye, FaEyeSlash, FaCode } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
-import { login } from '../../apiCalls/authCalls.js'
+import React, { useState } from 'react';
+import { FaJava, FaPython, FaJsSquare, FaEye, FaEyeSlash, FaCode } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../../apiCalls/authCalls.js';
 
 function Login() {
-    const navigate = useNavigate()
-    
-    // Navigate to signup page
-    function handleClick() {
-        navigate('/signup')
-    }
-    
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [showPassword, setShowPassword] = React.useState(false);
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [errorMsg, setErrorMsg] = React.useState('');
+    const navigate = useNavigate();
 
-    // Handle login
-    async function handleSubmit(e) {    
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+
+    const handleSignup = () => {
+        navigate('/signup');
+    };
+
+    async function handleSubmit(e) {
         e.preventDefault();
         setErrorMsg('');
         if (!email || !password) {
             setErrorMsg("Please fill in all fields");
-            return;
-        }
-        if (password.length < 6) {
-            setErrorMsg("Password must be at least 6 characters long");
             return;
         }
         const credentials = { email, password };
@@ -36,6 +30,9 @@ function Login() {
             if (response.status === 200) {
                 if (response.data?.token) {
                     localStorage.setItem('token', response.data.token);
+                }
+                if (response.data?.user) {
+                    localStorage.setItem('user', JSON.stringify(response.data.user));
                 }
                 navigate('/dashboard');
             } else {
@@ -67,11 +64,11 @@ function Login() {
                         Intervue
                     </h1>
                     <p className='text-lg sm:text-xl font-semibold mb-3 sm:mb-4'>
-                        From DSA to Networking — We've Got You Covered.
+                        From DSA to System Design — We've Got You Covered.
                     </p>
                     <p className='text-sm sm:text-base leading-relaxed mb-6 sm:mb-8 opacity-90'>
                         Intervue helps you sharpen your coding, problem-solving, and technical knowledge.
-                        Practice mock interviews tailored for computer science students, receive AI-powered
+                        Practice mock interviews tailored for developers, receive AI-powered
                         feedback instantly, and track your growth with a personalized dashboard.
                     </p>
 
@@ -96,8 +93,8 @@ function Login() {
                 <div className='flex flex-col sm:flex-row justify-between sm:justify-end items-center gap-3 sm:gap-6 mb-8 sm:mb-12 lg:mb-14'>
                     <p className='text-gray-600 text-sm sm:text-base'>New here?</p>
                     <button 
-                        className='bg-transparent border-2 border-blue-600 text-blue-600 px-6 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-300 font-medium text-sm sm:text-base'
-                        onClick={handleClick}
+                        className='bg-transparent border-2 border-blue-600 text-blue-600 px-6 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-300 font-medium text-sm sm:text-base cursor-pointer'
+                        onClick={handleSignup}
                     >
                         Sign Up
                     </button>
@@ -118,7 +115,7 @@ function Login() {
                             <button onClick={() => setErrorMsg('')} className='text-red-500 hover:text-red-700 font-bold ml-2'>&times;</button>
                         </div>
                     )}
-                    
+
                     <form onSubmit={handleSubmit} className='flex flex-col gap-4 sm:gap-6'>
                         <div className='relative'>
                             <input
@@ -143,7 +140,7 @@ function Login() {
                             />
                             <button
                                 type='button'
-                                className='absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200'
+                                className='absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer'
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
@@ -153,7 +150,7 @@ function Login() {
                         <button
                             type='submit'
                             disabled={isLoading}
-                            className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-3 sm:p-4 mt-2 sm:mt-4 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-semibold text-sm sm:text-base flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed'
+                            className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-3 sm:p-4 mt-2 sm:mt-4 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-semibold text-sm sm:text-base flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer'
                         >
                             {isLoading ? (
                                 <>
@@ -165,45 +162,10 @@ function Login() {
                             )}
                         </button>
                     </form>
-
-                    {/* Social Login Options */}
-                    <div className='mt-6 sm:mt-8'>
-                        <div className='relative'>
-                            <div className='absolute inset-0 flex items-center'>
-                                <div className='w-full border-t border-gray-200'></div>
-                            </div>
-                            <div className='relative flex justify-center text-sm'>
-                                <span className='px-4 bg-white text-gray-500'>Or continue with</span>
-                            </div>
-                        </div>
-                        
-                        <div className='mt-4 flex gap-3'>
-                            <button 
-                                type='button'
-                                className='flex-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl p-3 transition-colors duration-200 text-gray-600 font-medium text-sm'
-                            >
-                                Google
-                            </button>
-                            <button 
-                                type='button'
-                                className='flex-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl p-3 transition-colors duration-200 text-gray-600 font-medium text-sm'
-                            >
-                                GitHub
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Help Text */}
-                    <p className='text-xs sm:text-sm text-gray-500 text-center mt-6 leading-relaxed'>
-                        Having trouble signing in?{' '}
-                        <span className='text-blue-600 hover:text-blue-700 cursor-pointer underline'>
-                            Contact Support
-                        </span>
-                    </p>
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default Login
+export default Login;

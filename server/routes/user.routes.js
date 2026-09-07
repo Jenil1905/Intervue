@@ -1,6 +1,6 @@
 const express = require('express');
 const isAuth = require('../middlewares/isAuth.js');
-const { getCurrentUser, updateUserPhone, updateUsername, updateUserProfilePicture, updateUserSettings, changePassword } = require('../controllers/user.controller.js');
+const { getCurrentUser, updateUserPhone, updateUsername, updateUserProfilePicture, updateUserSettings, changePassword, deleteAccount } = require('../controllers/user.controller.js');
 const multer = require('multer');
 const storage = require('./../cloudinary.js');
 
@@ -11,6 +11,7 @@ router.patch('/update-phone', isAuth, updateUserPhone);
 router.patch('/update-name', isAuth, updateUsername);
 router.patch('/settings', isAuth, updateUserSettings);
 router.post('/change-password', isAuth, changePassword);
+router.delete('/account', isAuth, deleteAccount);
 
 // upload the photo
 const upload = multer({ storage: storage });
