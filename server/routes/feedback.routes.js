@@ -56,9 +56,10 @@ router.get('/:interviewId', async (req, res) => {
         const feedback = await getFeedbackFromDatabase(interviewId);
         
         if (!feedback) {
-            return res.status(404).json({
+            return res.status(200).json({
                 success: false,
-                message: 'Feedback not found'
+                message: 'Feedback not found',
+                data: null
             });
         }
 

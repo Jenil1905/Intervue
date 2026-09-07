@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Camera, Mic, MicOff, CameraOff, Phone } from 'lucide-react';
 import Editor from '@monaco-editor/react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import BeatLoader from 'react-spinners/BeatLoader';
 import { 
   startInterview, 
+  getInterviewDetails,
   saveUserCode, 
   generateContextualResponse,
   saveConversationMessage,
@@ -144,6 +145,7 @@ function Interview() {
 
   // --- Router Hooks ---
   const navigate = useNavigate();
+  const location = useLocation();
   const { topic } = useParams();
 
   // --- Language and Code State ---
@@ -565,35 +567,43 @@ function Interview() {
 
   useEffect(() => {
     if (interviewStarted && !question && !loading) {
-      const fetchFirstQuestion = async () => {
+      const fetchQuestion = async () => {
         setLoading(true);
         try {
-          console.log("Fetching first AI-generated question for topic:", topic);
-          const res = await startInterview(topic);
-           console.log("🔍 Full API response:", res);
-    console.log("🔍 Response data:", res.data);
-    console.log("🔍 Response structure:", JSON.stringify(res.data, null, 2));
-          const data = res.data || res;
+          const targetId = location.state?.interviewId || interviewId;
+          let data;
+
+          if (targetId) {
+            console.log("📋 Fetching existing interview session details for ID:", targetId);
+            const res = await getInterviewDetails(targetId);
+            data = res.data || res;
+          } else {
+            console.log("🚀 Creating new AI-generated interview for topic:", topic);
+            const res = await startInterview(topic);
+            data = res.data || res;
+          }
+
           if (data && data.currentQuestion) {
             setQuestion(data.currentQuestion);
             setInterviewId(data.interviewId);
-            console.log("AI interview started successfully");
-            console.log("📋 Extracted interviewId:", data.interviewId);
-      setInterviewId(data.interviewId);
+            if (data.timeLeft !== undefined) {
+              setTimeLeft(data.timeLeft);
+            }
+            console.log("✅ Interview session loaded successfully, ID:", data.interviewId);
           } else {
-            throw new Error("Invalid interview start response");
+            throw new Error("Invalid interview question response");
           }
         } catch (err) {
-          console.error("Error starting AI interview:", err);
-          alert("Could not start the interview: " + err.message);
+          console.error("Error initializing interview session:", err);
+          alert("Could not load interview session: " + (err.message || 'Unknown error'));
           handleLeaving();
         } finally {
           setLoading(false);
         }
       };
-      fetchFirstQuestion();
+      fetchQuestion();
     }
-  }, [interviewStarted, question, loading, topic, handleLeaving]);
+  }, [interviewStarted, question, loading, topic, location.state?.interviewId, interviewId, handleLeaving]);
 
   useEffect(() => {
     if (question && !isAiSpeaking && interviewStarted && !hasWelcomed.current && questionPhase === 'main') {

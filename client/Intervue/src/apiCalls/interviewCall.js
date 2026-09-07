@@ -6,6 +6,10 @@ export const startInterview = (topic) => {
     return axiosClient.post(`/api/interview/start/${topic}`);
 };
 
+export const getInterviewDetails = (interviewId) => {
+    return axiosClient.get(`/api/interview/session/${interviewId}`);
+};
+
 export const getInterviewHistory = () => {
     return axiosClient.get(`/api/interview/get-history`);
 };

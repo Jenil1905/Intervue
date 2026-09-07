@@ -5,9 +5,11 @@ getNextMainQuestion, finalizeCurrentQuestion
  } = require('./../controllers/interviewController.js')
 const isAuth = require('./../middlewares/isAuth.js')
 const getInterviewHistory = require('./../controllers/interview.controller.js')
+const getInterviewById = require('./../controllers/getInterviewById.controller.js')
 
 router.post('/start/:topic' ,isAuth, startInterview)
 router.get('/get-history', isAuth , getInterviewHistory)
+router.get('/session/:interviewId', isAuth, getInterviewById)
 router.patch('/save-code', isAuth , saveUserCode)
 router.patch('/save-spoken-answer', isAuth , saveSpokenAnswer)
 router.patch('/save-cross-question-answer', isAuth , saveCrossQuestionAnswer)
