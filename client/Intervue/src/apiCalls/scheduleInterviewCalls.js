@@ -20,4 +20,13 @@ export const getScheduledInterviews = async () => {
         console.error("Error fetching scheduled interviews:", error);
         throw error;
     }
+};// delete scheduled interview
+export const deleteScheduledInterview = async (id) => {
+    try {
+        const response = await axiosClient.delete(`/api/schedule-interviews/scheduled/${id}`);
+        return response;
+    } catch (error) {
+        console.error("Error deleting scheduled interview:", error);
+        throw error;
+    }
 };

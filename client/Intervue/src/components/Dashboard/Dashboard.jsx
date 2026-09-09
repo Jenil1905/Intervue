@@ -3,14 +3,14 @@ import {
     FaUserCircle, FaUserCog, FaBars, FaTimes, FaHistory, FaCode, 
     FaBriefcase, FaJs, FaGlobe, FaChevronRight, FaJava, FaPython, 
     FaDatabase, FaCalendarAlt, FaChevronDown, FaCheckCircle, FaSpinner, 
-    FaClock, FaChartLine, FaSearch
+    FaClock, FaChartLine, FaSearch, FaTrash
 } from 'react-icons/fa';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { getUserProfile } from '../../apiCalls/userCall.js';
 import { getInterviewHistory, startInterview } from '../../apiCalls/interviewCall.js';
 import { logout } from '../../apiCalls/authCalls.js';
-import { getScheduledInterviews, scheduleInterview } from '../../apiCalls/scheduleInterviewCalls.js'; 
+import { getScheduledInterviews, scheduleInterview, deleteScheduledInterview } from '../../apiCalls/scheduleInterviewCalls.js'; 
 import Logout from '../LogoutMenu/Logout.jsx';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -173,6 +173,7 @@ function Dashboard() {
     const [isScheduling, setIsScheduling] = useState(false);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [deletingScheduleId, setDeletingScheduleId] = useState(null);
     
     const navigate = useNavigate();
     const [date, setDate] = useState(new Date());
@@ -291,6 +292,18 @@ function Dashboard() {
             console.error("Failed to schedule interview:", error);
         } finally {
             setIsScheduling(false);
+        }
+    };
+
+    const handleDeleteSchedule = async (id) => {
+        setDeletingScheduleId(id);
+        try {
+            await deleteScheduledInterview(id);
+            setScheduledInterviews(prev => prev.filter(item => item._id !== id));
+        } catch (error) {
+            console.error("Failed to delete scheduled interview:", error);
+        } finally {
+            setDeletingScheduleId(null);
         }
     };
 
@@ -521,35 +534,47 @@ function Dashboard() {
                                         <FaCalendarAlt className="text-blue-600" />
                                         <span>Upcoming Scheduled Sessions</span>
                                     </h3>
-                                    <p className="text-sm text-gray-500">Your booked AI technical interview practice slots.</p>
+                                    <p className="text-sm text-gray-500">Your booked AI technical interview practice slots. Scroll horizontally to view all.</p>
                                 </div>
                                 <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
                                     {scheduledInterviews.length} Scheduled
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory">
                                 {scheduledInterviews.map((item) => (
-                                    <div key={item._id} className="p-4 border border-blue-100 rounded-xl bg-blue-50/40 flex flex-col justify-between gap-3">
+                                    <div key={item._id} className="min-w-[270px] sm:min-w-[310px] max-w-[330px] shrink-0 snap-start p-5 border border-blue-100 rounded-2xl bg-blue-50/40 hover:bg-blue-50/70 transition-all flex flex-col justify-between gap-4 shadow-xs relative group">
                                         <div>
                                             <div className="flex items-center justify-between gap-2">
-                                                <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 font-bold text-xs rounded-lg uppercase">
+                                                <span className="px-2.5 py-1 bg-blue-100 text-blue-700 font-bold text-xs rounded-lg uppercase tracking-wide truncate max-w-[190px]">
                                                     {item.topic.replace(/-/g, ' ')}
                                                 </span>
-                                                <span className="text-xs text-gray-500 font-medium">
-                                                    {new Date(item.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
+                                                <button 
+                                                    onClick={() => handleDeleteSchedule(item._id)}
+                                                    disabled={deletingScheduleId === item._id}
+                                                    title="Delete Scheduled Session"
+                                                    className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                                                >
+                                                    {deletingScheduleId === item._id ? <FaSpinner className="animate-spin text-rose-600" size={14} /> : <FaTrash size={14} />}
+                                                </button>
                                             </div>
-                                            <p className="text-sm font-semibold text-gray-800 mt-2 flex items-center gap-1.5">
-                                                <FaCalendarAlt size={14} className="text-blue-500" />
-                                                {new Date(item.scheduledTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-                                            </p>
+                                            <div className="mt-4 space-y-1.5">
+                                                <p className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                                    <FaCalendarAlt size={14} className="text-blue-500 shrink-0" />
+                                                    <span>{new Date(item.scheduledTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                </p>
+                                                <p className="text-xs text-gray-500 font-medium flex items-center gap-2">
+                                                    <FaClock size={12} className="text-indigo-400 shrink-0" />
+                                                    <span>{new Date(item.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                </p>
+                                            </div>
                                         </div>
                                         <button 
                                             onClick={() => handleStartInterview(item.topic)}
-                                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-medium transition-colors shadow-xs cursor-pointer"
+                                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-2"
                                         >
-                                            Start Session Now
+                                            <span>Start Session Now</span>
+                                            <FaChevronRight size={10} />
                                         </button>
                                     </div>
                                 ))}
