@@ -27,7 +27,8 @@ const scheduleInterviews = async (req,res)=>{
                 const formattedTopic = topic.replace(/-/g, ' ').toUpperCase();
                 const formattedTime = new Date(scheduledTime).toLocaleString('en-US', {
                     dateStyle: 'full',
-                    timeStyle: 'short'
+                    timeStyle: 'short',
+                    timeZone: process.env.TIMEZONE || 'Asia/Kolkata'
                 });
 
                 transporter.sendMail({
