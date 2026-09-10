@@ -26,7 +26,7 @@ const smtpTransporter = nodemailer.createTransport({
  */
 const sendMail = async (options) => {
     // 1. Resend HTTP API (Recommended for Render)
-    if (process.env.RESEND_API_KEY) {
+    if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim().startsWith('re_')) {
         const fromAddress = process.env.RESEND_FROM_EMAIL || 'Intervue <onboarding@resend.dev>';
         const toAddress = Array.isArray(options.to) ? options.to : [options.to];
 
